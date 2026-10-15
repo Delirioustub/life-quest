@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Quest · Level up your real life</title>
+<meta name="description" content="Life Quest turns real habits into quests, grows a kingdom from real milestones, and ends every season with Boss Raid Week.">
+<meta property="og:title" content="Life Quest"><meta property="og:description" content="Level up your real life. Build a kingdom. Defend it."><meta property="og:image" content="poster.jpg">
+<style>
+  :root { --bg:#0b0d1a; --card:#151a30; --card2:#1c2342; --line:#2a3360; --txt:#eef0ff; --mut:#8b93c0;
+          --acc:#8a5cff; --cy:#3fd8ff; --ok:#38e08a; --gold:#ffc94a; --red:#ff4d6d;
+          --STR:#ff6b4a; --CAREER:#4aa8ff; --CRAFT:#ffb340; --HOME:#ff5fa2; --WIS:#9b7bff; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; color:var(--txt); font:15px/1.4 -apple-system,system-ui,Roboto,sans-serif;
+         background:radial-gradient(circle at 50% -10%,#24205a 0,var(--bg) 55%) fixed; }
+  .wrap { max-width:520px; margin:0 auto; padding:14px 14px 90px; }
+  .pix { font-family:"Courier New",monospace; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+  .card { background:linear-gradient(180deg,var(--card2),var(--card)); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; box-shadow:0 4px 0 #070914; }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  h2 { font-size:12px; color:var(--mut); margin:18px 4px 8px; }
+  .mut { color:var(--mut); font-size:12.5px; }
+  .bar { height:10px; background:#070914; border-radius:6px; overflow:hidden; border:1px solid #232a52; }
+  .bar > i { display:block; height:100%; background:linear-gradient(90deg,var(--acc),var(--cy)); transition:width .8s cubic-bezier(.2,.9,.3,1); }
+  /* hero */
+  .hero { display:flex; gap:12px; align-items:center; }
+  .avatar { width:84px; height:161px; flex:none; border-radius:12px; background:#0f1330; border:2px solid var(--tier,#8a5cff); box-shadow:0 0 18px -4px var(--tier,#8a5cff); }
+  .badge { width:52px; height:52px; flex:none; }
+  .fund { color:var(--gold); font-size:20px; }
+  .boost { color:var(--cy); font-size:12px; animation:pulse 1.6s infinite; }
+  /* stats */
+  .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; text-align:center; }
+  .stat svg { width:34px; height:34px; } .stat b { display:block; font-size:18px; } .stat span { font-size:10px; color:var(--mut); }
+  .stat .bar { height:5px; margin-top:3px; }
+  /* quests */
+  .q { display:flex; gap:10px; align-items:center; cursor:pointer; transition:transform .1s; }
+  .q:active { transform:scale(.98); }
+  .q svg.ic { width:30px; height:30px; flex:none; }
+  .q .body { flex:1; min-width:0; }
+  .q.done { opacity:.5; cursor:default; border-color:#1f6b45; }
+  .tag { font-size:10px; padding:1px 6px; border-radius:8px; background:#232a52; color:var(--mut); }
+  .xp { color:var(--gold); font-weight:700; white-space:nowrap; font-size:13px; }
+  .chk { width:26px; height:26px; border-radius:7px; border:2px solid var(--line); display:grid; place-items:center; flex:none; }
+  .done .chk { background:var(--ok); border-color:var(--ok); color:#06210f; font-weight:900; }
+  /* bosses */
+  .boss { display:flex; gap:12px; align-items:center; }
+  .boss svg.art { width:92px; height:92px; flex:none; }
+  .boss.dead svg.art { filter:grayscale(1) brightness(.6); }
+  .hp > i { background:linear-gradient(90deg,#ff2d55,#ff8a4a); }
+  .ph { font-size:12px; margin-top:4px; } .ph.done { color:var(--ok); text-decoration:line-through; }
+  .ph { display:flex; align-items:center; gap:8px; } .ph span { flex:1; min-width:0; }
+  .ph button { all:unset; flex:none; color:#fff; cursor:pointer; padding:3px 10px; border-radius:8px; background:linear-gradient(90deg,#ff2d55,#ff8a4a); font:700 11px "Courier New",monospace; text-transform:uppercase; letter-spacing:.05em; }
+  /* trophies */
+  .ach { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .ach div { text-align:center; padding:10px 4px; border-radius:12px; background:#0f1330; border:1px solid var(--line); font-size:11px; }
+  .ach div.lock { opacity:.35; filter:grayscale(1); } .ach svg { width:34px; height:34px; display:block; margin:0 auto 4px; }
+  /* tabs */
+  nav { position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; background:#0a0c19ee; border-top:1px solid var(--line); backdrop-filter:blur(8px); }
+  nav button { all:unset; flex:1; max-width:110px; text-align:center; padding:10px 0 14px; font-size:11px; color:var(--mut); cursor:pointer; }
+  nav button.on { color:var(--txt); } nav button.on i { filter:drop-shadow(0 0 6px var(--acc)); }
+  nav i { display:block; font-style:normal; font-size:20px; }
+  /* sheet */
+  #sheet { position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:flex-end; z-index:5; }
+  #sheet .panel { background:var(--card2); width:100%; max-width:520px; margin:0 auto; border-radius:20px 20px 0 0; padding:18px; animation:up .25s ease-out; }
+  textarea { width:100%; min-height:76px; background:#070914; color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:10px; font:inherit; }
+  .btn { width:100%; padding:13px; border:0; border-radius:12px; font:700 15px system-ui; margin-top:10px; cursor:pointer; }
+  .primary { background:linear-gradient(90deg,var(--acc),#5b7bff); color:#fff; box-shadow:0 4px 0 #3b2a8a; } .ghost { background:transparent; color:var(--mut); }
+  label.file { display:block; padding:12px; border:1px dashed var(--line); border-radius:10px; text-align:center; margin:10px 0; color:var(--mut); cursor:pointer; }
+  #preview { max-width:100%; max-height:200px; border-radius:10px; display:none; margin-bottom:6px; }
+  #toast { position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#232a52; padding:10px 16px; border-radius:10px; display:none; z-index:9; }
+  /* fx */
+  #fx { position:fixed; inset:0; pointer-events:none; display:none; place-items:center; z-index:8; }
+  #fx .pop { text-align:center; animation:pop 1.4s ease-out forwards; }
+  #fx .big { font-size:46px; color:var(--gold); text-shadow:0 0 18px #ffb300, 0 4px 0 #6b4400; }
+  #fx.lvl { background:radial-gradient(circle,#8a5cff55,transparent 60%); }
+  #fx .ray { position:absolute; width:8px; height:8px; border-radius:2px; animation:burst 1s ease-out forwards; }
+  @keyframes pop { 0%{transform:scale(.3);opacity:0} 20%{transform:scale(1.15);opacity:1} 70%{transform:scale(1);opacity:1} 100%{transform:translateY(-40px);opacity:0} }
+  @keyframes burst { to { transform:translate(var(--dx),var(--dy)) rotate(200deg); opacity:0 } }
+  @keyframes pulse { 50% { opacity:.55 } }
+  @keyframes up { from { transform:translateY(40px); opacity:0 } }
+  @keyframes float { 50% { transform:translateY(-3px) } }
+  .boss:not(.dead) svg.art { animation:float 3s ease-in-out infinite; }
+  /* avatar life: breathing, blinking, look-around, emotes */
+  .avatar { cursor:pointer; position:relative; overflow:visible; } .avatar svg { width:100%; height:100%; overflow:visible; }
+  .av * { transform-box:fill-box; }
+  .av .av-root { animation:avBob 3.2s ease-in-out infinite; transform-origin:50% 100%; }
+  .av .av-torso { animation:avBreath 3.2s ease-in-out infinite; transform-origin:50% 100%; }
+  .av .av-head { animation:avHead 9s ease-in-out infinite; transform-origin:50% 90%; }
+  .av .av-lids > * { transform-origin:50% 0; transform:scaleY(0); animation:avBlink 4.6s infinite; }
+  .av .av-pupils { animation:avLook 9s ease-in-out infinite; }
+  .av .av-cape { animation:avCape 3.2s ease-in-out infinite; transform-origin:50% 0; }
+  .av .av-aura { animation:avAura 3.2s ease-in-out infinite; transform-origin:50% 50%; }
+  .av .av-orb { animation:avAura 1.6s ease-in-out infinite; transform-origin:50% 50%; }
+  .av .av-armR { transform-origin:10% 15%; } .av .av-armL { transform-origin:90% 10%; }
+  @keyframes avBob { 50% { transform:translateY(-1.6px); } }
+  @keyframes avBreath { 50% { transform:scale(1.025,1.035); } }
+  @keyframes avBlink { 0%,93%,100% { transform:scaleY(0); } 96% { transform:scaleY(1); } }
+  @keyframes avLook { 0%,62%,100% { transform:translateX(0); } 66%,72% { transform:translateX(-1.1px); } 76%,82% { transform:translateX(1.1px); } 86% { transform:translateX(0); } }
+  @keyframes avHead { 0%,62%,100% { transform:rotate(0); } 68% { transform:rotate(-4deg); } 79% { transform:rotate(4deg); } 88% { transform:rotate(0); } }
+  @keyframes avCape { 50% { transform:skewX(2deg) scaleX(1.03); } }
+  @keyframes avAura { 50% { opacity:.65; transform:scale(1.06); } }
+  .av.e-wave .av-armR { animation:avWave .4s ease-in-out 3 alternate; }
+  @keyframes avWave { from { transform:rotate(-8deg); } to { transform:rotate(26deg); } }
+  .av.e-flex .av-armL { animation:avFlexL .5s ease-in-out 2 alternate; } .av.e-flex .av-armR { animation:avFlexR .5s ease-in-out 2 alternate; } .av.e-flex .av-torso { animation:avPuff .5s ease-in-out 2 alternate; }
+  @keyframes avFlexL { to { transform:rotate(70deg) translateY(-6px); } } @keyframes avFlexR { to { transform:rotate(-18deg); } } @keyframes avPuff { to { transform:scale(1.07,1.03); } }
+  .av.e-cheer .av-root, .av.e-jump .av-root { animation:avJump .45s cubic-bezier(.3,1.6,.6,1) 3; }
+  .av.e-cheer .av-armL { animation:avArmUp .45s ease-out 3 alternate; }
+  @keyframes avJump { 0%,100% { transform:translateY(0) scale(1); } 15% { transform:translateY(1px) scale(1.05,.94); } 55% { transform:translateY(-12px) scale(.97,1.04); } }
+  @keyframes avArmUp { to { transform:rotate(120deg); } }
+  .av.e-lvl .av-root { animation:avLvl 1.6s ease-out 1; } .av.e-lvl .av-armL { animation:avArmUp .6s ease-out 1 forwards; } .av.e-lvl .av-armR { animation:avFlexR .6s ease-out 1 forwards; }
+  .av.e-lvl .av-aura { animation:avAuraBig 1.6s ease-out 1; }
+  @keyframes avLvl { 0% { transform:translateY(0); } 25% { transform:translateY(-16px) rotate(-3deg); } 60% { transform:translateY(-14px) rotate(3deg); } 100% { transform:translateY(0); } }
+  @keyframes avAuraBig { 30% { opacity:1; transform:scale(1.35); } }
+  .av-pop { position:absolute; left:50%; top:-6px; transform:translateX(-50%); font-size:18px; pointer-events:none; animation:avPop 1.3s ease-out forwards; z-index:3; }
+  @keyframes avPop { 0% { opacity:0; transform:translate(-50%,6px) scale(.5); } 20% { opacity:1; transform:translate(-50%,-6px) scale(1.15); } 80% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-18px); } }
+  .avstage { position:relative; height:330px; margin:6px auto 10px; border-radius:16px; background:radial-gradient(ellipse at 50% 85%, #2a2f5a, #0f1330 70%); overflow:hidden; touch-action:pan-y; cursor:grab; }
+  .avturn { position:absolute; inset:0; display:grid; place-items:center; transition:transform .5s; transform-style:preserve-3d; }
+  .avbig { width:150px; height:288px; border:0; box-shadow:none; background:none; transform-origin:50% 9%; transition:transform .35s; }
+  .avctl { position:absolute; left:6px; right:6px; bottom:6px; display:flex; gap:4px; justify-content:center; flex-wrap:wrap; }
+  .avctl .chip { background:rgba(15,19,48,.85); }
+  .lktabs { display:flex; gap:4px; flex-wrap:wrap; margin:4px 0 10px; } .lkopts { margin:4px 0 10px; display:flex; flex-wrap:wrap; gap:2px; } .lkopts .chip { text-transform:capitalize; }
+  /* comic boss speech bubbles */
+  #bquip { position:absolute; left:12px; right:12px; top:calc(8% + 76px); z-index:5; max-width:520px; margin:0 auto; }
+  .quip { position:relative; display:flex; gap:10px; align-items:flex-start; margin:8px 0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .quip .qface { width:46px; height:46px; flex:none; border-radius:50%; background:#0f1330; border:2px solid var(--qc,#ff4d6d); overflow:hidden; }
+  .quip .qface svg { width:100%; height:100%; }
+  .quip .qb { position:relative; flex:1; background:#fffaf0; color:#1a1530; border:3px solid #1a1530; border-radius:16px; padding:8px 12px 8px; font:600 13.5px/1.35 system-ui,sans-serif; box-shadow:4px 4px 0 #1a1530; min-height:38px; }
+  .quip .qb:before { content:''; position:absolute; left:-14px; top:12px; border:8px solid transparent; border-right:12px solid #1a1530; }
+  .quip .qb:after { content:''; position:absolute; left:-8px; top:15px; border:5px solid transparent; border-right:8px solid #fffaf0; }
+  .quip .qn { font:700 10px/1 'Press Start 2P',monospace; color:var(--qc,#c0283f); margin-bottom:5px; letter-spacing:.5px; text-transform:uppercase; }
+  .quip .qt.typing:after { content:'▌'; animation:blinkC .6s steps(1) infinite; } @keyframes blinkC { 50% { opacity:0; } }
+  .quip .qh { position:absolute; right:8px; bottom:3px; font-size:9px; color:#8a7f9a; }
+  .quip .qx { position:absolute; right:4px; top:2px; border:0; background:none; color:#8a7f9a; font-size:14px; cursor:pointer; padding:2px 5px; }
+  .quip.shake .qb { animation:qShake .35s; } @keyframes qShake { 25% { transform:translateX(-3px) rotate(-1deg); } 75% { transform:translateX(3px) rotate(1deg); } }
+  .quip.in { animation:qIn .35s cubic-bezier(.3,1.6,.6,1); } @keyframes qIn { from { opacity:0; transform:scale(.8) translateY(6px); } }
+  .quip.mood-nervous .qb { background:#eef6ff; } .quip.mood-nervous .qb:after { border-right-color:#eef6ff; }
+  .quip.mood-gloat .qb, .quip.mood-taunt .qb { background:#fff1f1; } .quip.mood-gloat .qb:after, .quip.mood-taunt .qb:after { border-right-color:#fff1f1; }
+  .quip.mood-defeat .qb { background:#f2fff4; } .quip.mood-defeat .qb:after { border-right-color:#f2fff4; }
+  @media (prefers-reduced-motion: reduce) {
+    .av *, .av, .quip, .quip *, .av-pop { animation:none !important; transition:none !important; }
+    .av .av-lids > * { transform:scaleY(0); }
+  }
+  .seg { display:flex; gap:4px; margin-top:6px; } .seg i { flex:1; height:10px; border-radius:3px; background:#070914; border:1px solid #232a52; }
+  .seg i.on { background:linear-gradient(90deg,var(--ok),#9bff6a); border-color:var(--ok); } .seg i.gift { background:#3a4580; }
+  .timer { font-family:"Courier New",monospace; color:var(--cy); font-size:12px; }
+  .bounty { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset, 0 4px 0 #070914; }
+  .btag { background:var(--gold); color:#2a1d00; font-weight:700; }
+  .perfect { background:linear-gradient(90deg,#1f6b45,#2a8a5a); text-align:center; }
+  .vs { display:grid; grid-template-columns:1fr 1fr 1fr; text-align:center; gap:6px; } .vs b { display:block; font-size:20px; }
+  .up { color:var(--ok); } .down { color:var(--red); }
+  .recap { border-color:var(--acc); background:linear-gradient(160deg,#2a1f6a,var(--card)); }
+  .x { all:unset; float:right; color:var(--mut); cursor:pointer; padding:0 4px; }
+  #chest { position:fixed; inset:0; background:rgba(5,6,15,.85); display:none; place-items:center; z-index:10; text-align:center; }
+  #chest svg { width:150px; height:150px; } #chest .shake { animation:shake .5s 2; }
+  #chest .open { animation:pop 2.6s ease-out forwards; }
+  #chest .item { font-size:20px; margin-top:8px; }
+  @keyframes shake { 25%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} }
+  .inv { display:flex; flex-wrap:wrap; gap:6px; } .inv span { font-size:11px; padding:4px 8px; border-radius:8px; background:#0f1330; border:1px solid var(--line); }
+  .sw { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 12px; }
+  .sw button { all:unset; width:30px; height:30px; border-radius:50%; border:2px solid #232a52; cursor:pointer; }
+  .sw button.on { border-color:#fff; box-shadow:0 0 0 2px var(--acc); }
+  .chip { all:unset; padding:6px 10px; border-radius:10px; background:#0f1330; border:1px solid var(--line); font-size:12px; cursor:pointer; margin:0 6px 6px 0; display:inline-block; }
+  .chip.on { border-color:var(--acc); background:#2a1f6a; color:#fff; }
+  .chip.key { border-color:var(--gold); }
+  input.txt { width:100%; background:#070914; color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:10px; font:inherit; margin:4px 0 10px; }
+  .cls { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .cls button { all:unset; padding:10px; border-radius:12px; background:#0f1330; border:1px solid var(--line); cursor:pointer; font-size:12px; }
+  .cls button.on { border-color:var(--acc); background:#2a1f6a; } .cls b { display:block; font-size:14px; }
+  .steps { display:flex; gap:6px; margin-bottom:10px; } .steps i { flex:1; height:4px; border-radius:2px; background:#232a52; } .steps i.on { background:var(--acc); }
+  #brain { position:fixed; inset:0; background:rgba(5,6,15,.92); display:none; z-index:11; overflow:auto; }
+  #brain .panel { max-width:460px; margin:40px auto; padding:18px; }
+  .mem { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+  .mem button { all:unset; aspect-ratio:1; border-radius:12px; background:linear-gradient(160deg,#2a1f6a,#1c2342); border:1px solid var(--line); display:grid; place-items:center; cursor:pointer; transition:transform .2s; }
+  .mem button svg { width:60%; height:60%; } .mem button.hide svg { visibility:hidden; } .mem button.got { border-color:var(--ok); opacity:.6; }
+  .opt { all:unset; display:block; padding:12px; margin:8px 0; border-radius:12px; background:#0f1330; border:1px solid var(--line); cursor:pointer; }
+  .opt.right { border-color:var(--ok); background:#123d29; } .opt.wrong { border-color:var(--red); background:#3d1220; }
+  .tbar { height:6px; border-radius:4px; background:#070914; overflow:hidden; } .tbar i { display:block; height:100%; background:linear-gradient(90deg,var(--cy),var(--acc)); transition:width 1s linear; }
+  .kwrap { border-radius:14px; overflow:hidden; background:radial-gradient(ellipse at 50% 30%,#1d2a4a,#0b0d1a 75%); border:1px solid var(--line); }
+  .kwrap svg { display:block; width:100%; height:auto; }
+  .kmini { width:100%; max-width:220px; margin-top:6px; border-radius:10px; overflow:hidden; background:#0f1330; }
+  .kmini svg { display:block; width:100%; height:auto; }
+  .hint { display:flex; gap:8px; align-items:center; margin:6px 0; font-size:13px; }
+  .hint i { font-style:normal; width:22px; height:22px; flex:none; display:grid; place-items:center; border-radius:6px; background:#0f1330; border:1px dashed var(--line); }
+  @keyframes smoke { 0%{opacity:.7;transform:translateY(0)} 100%{opacity:0;transform:translateY(-14px)} }
+  @keyframes flick { 50%{transform:scaleY(.8)} }
+  .k-smoke { animation:smoke 2.4s infinite; } .k-flame { transform-origin:center bottom; animation:flick .6s infinite; transform-box:fill-box; }
+  .k-new { animation:pop 1.6s ease-out; transform-box:fill-box; transform-origin:center; }
+/*LANDING-CSS-START*/
+  .lp { max-width:560px; margin:0 auto; }
+  .lp-hero { position:relative; border-radius:20px; overflow:hidden; border:1px solid var(--line); background:radial-gradient(ellipse at 50% 20%,#3a2a8a,#0b0d1a 75%); text-align:center; padding:18px 14px 16px; }
+  .lp-hero h1 { font:900 40px/1 "Courier New",monospace; letter-spacing:.08em; margin:6px 0 4px; background:linear-gradient(180deg,#fff3c4,#ffc94a 55%,#d08a4a); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 4px 0 rgba(107,68,0,.35); }
+  .lp-hero .tag2 { color:#cfd6ff; font-size:15px; margin:0 0 10px; }
+  .lp-media { border-radius:14px; overflow:hidden; background:#070914; border:1px solid var(--line); margin:10px 0; }
+  .lp-media video, .lp-media img, .lp-media canvas { display:block; width:100%; }
+  .lp-cta { display:block; width:100%; padding:16px; border:0; border-radius:14px; font:900 17px "Courier New",monospace; letter-spacing:.08em; text-transform:uppercase; color:#1b1200; cursor:pointer; text-align:center; text-decoration:none;
+            background:linear-gradient(180deg,#ffe08a,#ffb340); box-shadow:0 5px 0 #8a5a00, 0 0 30px -6px #ffc94a; margin-top:10px; }
+  .lp-sec { margin:22px 0 0; } .lp-sec h3 { font:700 13px "Courier New",monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin:0 4px 10px; }
+  .lp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .lp-feat { background:linear-gradient(180deg,var(--card2),var(--card)); border:1px solid var(--line); border-radius:14px; padding:12px; font-size:13px; color:var(--mut); }
+  .lp-feat b { display:block; color:var(--txt); font-size:14px; margin:4px 0 2px; } .lp-feat .e { font-size:24px; }
+  .lp-rule { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; background:#0f1330; border:1px solid var(--line); margin-bottom:8px; font-size:13.5px; }
+  .lp-rule .pill { flex:none; font:700 12px "Courier New",monospace; padding:4px 8px; border-radius:8px; color:#06210f; }
+  .lp-walk { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .lp-walk::-webkit-scrollbar { display:none; }
+  .lp-step { flex:0 0 86%; scroll-snap-align:center; background:linear-gradient(160deg,#2a1f6a,var(--card)); border:1px solid var(--acc); border-radius:16px; padding:16px; min-height:190px; }
+  .lp-step .num { font:900 34px "Courier New",monospace; color:var(--acc); } .lp-step b { display:block; font-size:17px; margin:4px 0 6px; } .lp-step p { color:#cfd6ff; margin:0; font-size:14px; }
+  .lp-dots { text-align:center; margin-top:6px; } .lp-dots i { display:inline-block; width:7px; height:7px; border-radius:50%; background:#2a3360; margin:0 3px; } .lp-dots i.on { background:var(--gold); }
+  .lp-sched { width:100%; border-collapse:collapse; font-size:13px; } .lp-sched td { padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; } .lp-sched td:first-child { color:var(--gold); font-weight:700; white-space:nowrap; }
+  .lp-faq details { background:#0f1330; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:8px; } .lp-faq summary { cursor:pointer; font-weight:700; } .lp-faq p { color:var(--mut); margin:8px 0 2px; font-size:13.5px; }
+  .lp-foot { text-align:center; color:var(--mut); font-size:12px; margin:24px 0 10px; }
+/*LANDING-CSS-END*/
+  /* raids */
+  .ready { border-color:#ff8a4a; background:linear-gradient(160deg,#3a1a24,var(--card)); }
+  .rmeter { height:14px; border-radius:8px; background:#070914; border:1px solid #3a2a40; overflow:hidden; margin:8px 0 4px; }
+  .rmeter i { display:block; height:100%; transition:width .8s; }
+  .rchips { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; } .rchip { flex:1; min-width:96px; padding:7px 8px; border-radius:10px; background:#0f1330; border:1px solid var(--line); font-size:11px; }
+  .rchip b { display:block; font-size:15px; } .rchip.Secure { border-color:var(--ok); } .rchip.Contested { border-color:var(--gold); } .rchip.risk { border-color:var(--red); }
+  .hist { display:flex; gap:10px; align-items:center; } .hist .ico { font-size:26px; width:34px; text-align:center; }
+  .win { color:var(--ok); } .loss { color:var(--red); }
+  .relic { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid #232a52; } .relic:last-child { border:0; }
+  .relic .gem { width:38px; height:38px; flex:none; border-radius:10px; display:grid; place-items:center; font-size:20px; background:radial-gradient(circle,#4a3a8a,#151a30); border:1px solid var(--gold); box-shadow:0 0 12px -3px var(--gold); }
+  .relic.stolen .gem { filter:grayscale(1); border-color:var(--red); box-shadow:none; }
+  #battle { position:fixed; inset:0; z-index:12; background:#05060f; display:none; flex-direction:column; }
+  #battle canvas { flex:1; width:100%; display:block; }
+  #battle .bfoot { padding:12px 14px 22px; max-width:520px; margin:0 auto; width:100%; }
+  .share { display:flex; align-items:center; gap:8px; margin:5px 0; font-size:13px; } .share .bar { flex:1; }
+</style></head>
+<body><div class="wrap" style="padding-bottom:30px"><div class="lp">
+  <div class="lp-hero"><div class="pix mut" style="color:var(--cy)">A real-life RPG</div><h1>LIFE QUEST</h1><p class="tag2">Level up your real life. Build a kingdom while you build your habits, then defend it.</p>
+    <div class="lp-media"><video src="life-quest-trailer.mp4" poster="poster.jpg" autoplay muted loop playsinline controls></video></div><a class="lp-cta" href="https://script.google.com/macros/s/AKfycbwbTEV6uZZ3YfI8TViq9tSRlLXLYHVdGOlI9Xn6sNRYWvHPTZjdCpRnXp_v6B_NqVES/exec">⚔️ Start your quest</a>
+    <div class="mut" style="margin-top:8px">Free · family &amp; friends · sign in with Google</div></div>
+  <div class="lp-sec"><h3>What it is</h3><div class="card" style="font-size:14.5px">Life Quest turns the things you already want to do (training, family time, learning, side projects, leading at work) into quests. Doing them raises your stats, opens chests and grows a living kingdom. Every few weeks, bosses attack. If you've been consistent, you win.</div></div>
+  <div class="lp-sec"><h3>How it works</h3><div class="lp-grid"><div class="lp-feat"><span class="e">⚔️</span><b>Daily quests</b>Pick your own quests across 5 stats: Strength, Career, Craft, Home and Wisdom.</div><div class="lp-feat"><span class="e">📷</span><b>Proof</b>Bigger quests need a photo or a note. Honest logs, real progress.</div><div class="lp-feat"><span class="e">🎁</span><b>Loot chests</b>Logged quests can drop chests: bonus XP, streak freezes, cosmetics, even real-life rewards.</div><div class="lp-feat"><span class="e">🧠</span><b>Brain rounds</b>Optional riddles, memory and word games that upgrade your chest.</div><div class="lp-feat"><span class="e">🏰</span><b>Your kingdom</b>Real milestones raise buildings. Your camp grows into a village, a town, a city, a castle.</div><div class="lp-feat"><span class="e">🐉</span><b>Boss Raid Week</b>Every season ends with bosses attacking your kingdom. Consistency is your armor.</div><div class="lp-feat"><span class="e">🤝</span><b>Co-op raids</b>Every quarter the whole party fights one giant boss together. Everyone sees their share.</div><div class="lp-feat"><span class="e">💎</span><b>Relics</b>Win raids to earn relics and legendary villagers with small perks. Lose and a boss may steal one.</div></div></div>
+  <div class="lp-sec"><h3>Quick walkthrough</h3><div class="lp-walk" id="lpwalk" onscroll="lpDots(this)"><div class="lp-step"><div class="num">1</div><b>Create your hero</b><p>Pick a name, a class with a small perk and a motto, then build your look: body, face, hair, beard, scars, outfit colors and armor tier.</p></div><div class="lp-step"><div class="num">2</div><b>Choose your quests</b><p>Choose 3–6 dailies, up to 4 weeklies and a Keystone habit. A home workout counts as much as the gym.</p></div><div class="lp-step"><div class="num">3</div><b>Log it with proof</b><p>Tap a quest, add a photo or note, claim XP. Chests drop and bonus rounds pop up.</p></div><div class="lp-step"><div class="num">4</div><b>Build your kingdom</b><p>Boss phases, ideas, streaks and levels raise buildings, and villagers move in.</p></div><div class="lp-step"><div class="num">5</div><b>Survive Boss Raid Week</b><p>Three bosses attack in the last week of each season. 90% consistency wins every time.</p></div><div class="lp-step"><div class="num">6</div><b>Raid together</b><p>Quarterly co-op raids pool the whole family against one huge boss.</p></div></div>
+    <div class="lp-dots" id="lpdots"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div></div>
+  <div class="lp-sec"><h3>The rules</h3>
+    <div class="lp-rule"><span class="pill" style="background:var(--ok)">90%+</span><div><b>Guaranteed win.</b> Consistency = quests completed ÷ quests scheduled during the build weeks, for the stat each boss attacks.</div></div>
+    <div class="lp-rule"><span class="pill" style="background:var(--gold)">70–89%</span><div><b>Contested.</b> Your win chance grows with your score, with a small boost from that stat's level and your relics. The roll is sealed per player and raid, so it can't be re-rolled.</div></div>
+    <div class="lp-rule"><span class="pill" style="background:var(--red);color:#fff">&lt;70%</span><div><b>Loss.</b> The boss steals one relic or legendary villager. With nothing to steal, a building gets cosmetic damage that's repaired next season. You never lose XP, levels or buildings.</div></div>
+    <div class="lp-rule"><span class="pill" style="background:#3fd8ff">🛡️❄️</span><div><b>Shields &amp; freezes count as done.</b> Each daily habit gets 1 free miss per week, and a held streak freeze covers another.</div></div>
+    <div class="lp-rule"><span class="pill" style="background:#9b7bff;color:#fff">⚔️</span><div><b>Revenge.</b> A stolen item stays with that boss. Beat the same boss in a later raid to take it back. <b>Prologue bonus:</b> everything still stolen comes home on Jan 1, 2027.</div></div>
+    <div class="lp-rule"><span class="pill" style="background:#ff5fa2">⛺</span><div><b>Warning signs.</b> If your last 2 weeks slip below 90%, enemy camps appear around your kingdom. They shrink as you recover.</div></div></div>
+  <div class="lp-sec"><h3>Prologue schedule · 2026</h3><div class="card"><table class="lp-sched"><tr><td>Oct 18–Nov 14</td><td><b>Prologue I: The First Spark</b><div class="mut">Build weeks to Nov 7 · Boss Raid Week Nov 8–Nov 14</div>
+      <div style="font-size:12.5px">👹 Nov 9 · The Snooze Wraith · STR</div><div style="font-size:12.5px">👹 Nov 11 · Doomscroll Hydra · WIS</div><div style="font-size:12.5px">👹 Nov 13 · Phantom of Procrastination · CRAFT</div></td></tr><tr><td>Nov 15–Dec 12</td><td><b>Prologue II: The Long Frost</b><div class="mut">Build weeks to Dec 5 · Boss Raid Week Dec 6–Dec 12</div>
+      <div style="font-size:12.5px">👹 Dec 7 · Baron Excuse · CAREER</div><div style="font-size:12.5px">👹 Dec 9 · Lady Burnout · HOME</div><div style="font-size:12.5px">👹 Dec 11 · The Snooze Wraith · STR</div></td></tr><tr><td>Dec 13–Dec 31</td><td><b>Prologue III: The Midwinter Siege</b><div class="mut">Build weeks to Dec 26 · Boss Raid Week Dec 27–Dec 31</div>
+      <div style="font-size:12.5px">👹 Dec 27 · Doomscroll Hydra · WIS</div><div style="font-size:12.5px">👹 Dec 29 · Phantom of Procrastination · CRAFT</div><div style="font-size:12.5px">🤝 Dec 31 · The Couch Golem (co-op)</div></td></tr>
+      <tr><td>Jan 1</td><td><b>Year 1 begins</b><div class="mut">12 seasons, 4 quarterly co-op raids, fresh rules tuned from the prologue.</div></td></tr></table></div></div>
+  <div class="lp-sec lp-faq"><h3>FAQ</h3>
+    <details><summary>Who can see my data?</summary><p>Only the game's owner can open the spreadsheet that stores the game. Players never get access to the sheet. Everything goes through the app, which checks every entry.</p></details>
+    <details><summary>Where do my proof photos go?</summary><p>Into a private folder in the owner's Google Drive. They're used to keep logs honest and aren't shared anywhere.</p></details>
+    <details><summary>What do I need?</summary><p>A Google account (any Gmail works) and a phone browser. Open the link, sign in with Google, and add it to your home screen.</p></details>
+    <details><summary>Do I have to go to a gym?</summary><p>No. Everyone picks their own quests. A daily walk can level Strength just like lifting does.</p></details>
+    <details><summary>What if I miss days?</summary><p>Shields and freezes cover the odd miss. You never lose XP or buildings, and a lost raid only costs a relic or some cosmetic damage.</p></details>
+    <details><summary>Can I join after the season starts?</summary><p>Yes. Your consistency only counts from the day you join. If you join after a season's build weeks, you sit that raid out, with no penalty.</p></details></div>
+  <div class="lp-sec"><a class="lp-cta" href="https://script.google.com/macros/s/AKfycbwbTEV6uZZ3YfI8TViq9tSRlLXLYHVdGOlI9Xn6sNRYWvHPTZjdCpRnXp_v6B_NqVES/exec">⚔️ Start your quest</a></div>
+  <div class="lp-foot">Life Quest · made for family &amp; friends</div></div>
+<p class="lp-foot">Tapping <b>Start your quest</b> opens the game. Google will ask you to sign in, and any Google account works.</p></div>
+<script>function lpDots(el){const i=Math.round(el.scrollLeft/(el.firstElementChild.offsetWidth+12));document.querySelectorAll('#lpdots i').forEach((d,j)=>d.className=i===j?'on':'');}</script>
+</body></html>
