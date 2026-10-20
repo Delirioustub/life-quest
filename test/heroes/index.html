@@ -1,74 +1,33 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Life Quest v16 - 3D hero preview</title>
-<style>
-  :root { --bg:#0b0d1a; --card:#151a33; --line:#2a3160; --ink:#e8ecff; --mut:#9aa3d6; --tier:#8a5cff; }
-  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:14px 16px 6px; } h1 { font-size:17px; margin:0 0 2px; } .mut { color:var(--mut); font-size:12px; }
-  .hero { display:flex; gap:12px; align-items:center; margin:10px 16px; padding:12px; background:var(--card); border:1px solid var(--line); border-radius:16px; }
-  .frame { position:relative; flex:none; border-radius:12px; background:radial-gradient(ellipse at 50% 35%,#24306a,#0f1330 70%); border:2px solid var(--tier); box-shadow:0 0 18px -4px var(--tier); overflow:visible; cursor:pointer; touch-action:manipulation; }
-  .frame canvas { display:block; width:100%; height:100%; border-radius:10px; }
-  .big { width:132px; height:198px; }
-  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:6px 16px 20px; }
-  .cell { text-align:center; } .cell .frame { width:84px; height:126px; margin:0 auto; } .cell .nm { font-size:11px; color:var(--mut); margin-top:4px; }
-  .cell.sel .frame { --tier:#ffc94a; }
-  .pop { position:absolute; left:50%; top:-6px; transform:translateX(-50%); font-size:18px; pointer-events:none; animation:pop 1s ease-out forwards; }
-  @keyframes pop { 0% { opacity:0; transform:translate(-50%,6px) scale(.5); } 20% { opacity:1; transform:translate(-50%,-6px) scale(1.15); } 80% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-18px); } }
-  .info b { display:block; font-size:16px; } .info .mut { margin-top:4px; }
-  .row { margin:0 16px 8px; display:flex; gap:8px; } .row button { all:unset; cursor:pointer; padding:7px 12px; border-radius:999px; background:#1d2346; border:1px solid var(--line); font-size:12px; }
-  .row button.on { background:#3a2a8a; border-color:#8a5cff; }
-</style></head>
-<body>
-<header><h1>Life Quest - 3D hero (v16)</h1><div class="mut">Idle loops on its own. Tap any hero to play the tap reaction (hop and raise, then settle).</div></header>
-<div class="hero"><div class="frame big" id="bigf"><canvas id="big"></canvas></div>
-  <div class="info"><b id="bigname">-</b><div class="mut" id="bigmeta"></div><div class="mut">Tap the portrait.</div></div></div>
-<div class="row"><button id="b-auto" class="on">auto res</button><button id="b-256">256 sheets</button><button id="b-512">512 sheets</button></div>
-<div class="grid" id="grid"></div>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Life Quest · v19c hero sprites</title>
+<style>body{background:#0f1330;color:#e8e8f4;font:14px system-ui;margin:0;padding:16px}h1{font-size:18px}.row{margin:8px 0}label{display:inline-block;width:90px;color:#9aa}
+button,select{background:#1d2450;color:#fff;border:1px solid #3a4580;border-radius:6px;padding:4px 8px;margin:2px}.sw{width:22px;height:22px;border-radius:50%;display:inline-block;margin:2px;cursor:pointer;border:2px solid #0000}.sw.on{border-color:#fff}
+.stage{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}.box{background:#1a2048;border-radius:12px;padding:8px;text-align:center}canvas{display:block;image-rendering:auto}
+#grid canvas{width:84px;height:161px;object-fit:contain}</style></head><body>
+<h1>Life Quest hero sprites v19c (layered: base + tinted skin + tinted hair)</h1>
+<div class="row"><label>Sex</label><select id="sex"><option value="masc">masculine</option><option value="fem">feminine</option></select></div>
+<div class="row"><label>Outfit</label><select id="set"><option>starter</option><option>warrior</option><option>mage</option><option value="dawn">Dawnforged (legendary)</option><option value="archive">Quiet Archive (legendary)</option><option value="shadow">Shadowstep (legendary)</option></select></div>
+<div class="row"><label>Hair</label><select id="hair"></select></div>
+<div class="row"><label>Hair colour</label><span id="hc"></span></div>
+<div class="row"><label>Skin</label><span id="sk"></span></div>
+<div class="row"><button id="tap">Tap (play tap animation)</button> <span id="info" style="color:#9aa"></span></div>
+<div class="stage"><div class="box"><canvas id="big" style="height:420px"></canvas>large</div><div class="box"><canvas id="mid" style="height:161px"></canvas>app size</div><div class="box"><canvas id="sm" style="height:64px"></canvas>64 px</div></div>
+<h3>All outfits (current hair / colours)</h3><div id="grid" class="stage"></div>
 <script>
-const META = {"fem_mage": {"crop": {"x": 0.234375, "y": 0.010416666666666666, "w": 0.703125, "h": 0.9895833333333334, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_mage_idle_256.webp", "anim": "fem_mage_idle_256_anim.webp", "w": 180, "h": 380, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 112.0, "anim_kb": 126.4}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_mage_idle_512.webp", "anim": "fem_mage_idle_512_anim.webp", "w": 360, "h": 760, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 181.7, "anim_kb": 188.5}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_mage_tap_256.webp", "anim": "fem_mage_tap_256_anim.webp", "w": 180, "h": 380, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 96.5, "anim_kb": 102.3}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_mage_tap_512.webp", "anim": "fem_mage_tap_512_anim.webp", "w": 360, "h": 760, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 158.0, "anim_kb": 155.6}}}, "fem_starter": {"crop": {"x": 0.140625, "y": 0.17708333333333334, "w": 0.78125, "h": 0.8125, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_starter_idle_256.webp", "anim": "fem_starter_idle_256_anim.webp", "w": 200, "h": 312, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 102.8, "anim_kb": 114.2}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_starter_idle_512.webp", "anim": "fem_starter_idle_512_anim.webp", "w": 400, "h": 624, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 162.1, "anim_kb": 170.3}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_starter_tap_256.webp", "anim": "fem_starter_tap_256_anim.webp", "w": 200, "h": 312, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 87.6, "anim_kb": 92.7}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_starter_tap_512.webp", "anim": "fem_starter_tap_512_anim.webp", "w": 400, "h": 624, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 141.8, "anim_kb": 139.2}}}, "fem_warrior": {"crop": {"x": 0.0, "y": 0.0, "w": 0.875, "h": 1.0, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_warrior_idle_256.webp", "anim": "fem_warrior_idle_256_anim.webp", "w": 224, "h": 384, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 118.9, "anim_kb": 135.8}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_warrior_idle_512.webp", "anim": "fem_warrior_idle_512_anim.webp", "w": 448, "h": 768, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 206.3, "anim_kb": 223.4}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "fem_warrior_tap_256.webp", "anim": "fem_warrior_tap_256_anim.webp", "w": 224, "h": 384, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 100.2, "anim_kb": 106.7}, "512": {"full_w": 512, "full_h": 768, "sheet": "fem_warrior_tap_512.webp", "anim": "fem_warrior_tap_512_anim.webp", "w": 448, "h": 768, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 175.9, "anim_kb": 172.6}}}, "masc_mage": {"crop": {"x": 0.171875, "y": 0.0, "w": 0.828125, "h": 1.0, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_mage_idle_256.webp", "anim": "masc_mage_idle_256_anim.webp", "w": 212, "h": 384, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 131.0, "anim_kb": 143.2}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_mage_idle_512.webp", "anim": "masc_mage_idle_512_anim.webp", "w": 424, "h": 768, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 215.1, "anim_kb": 219.3}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_mage_tap_256.webp", "anim": "masc_mage_tap_256_anim.webp", "w": 212, "h": 384, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 109.1, "anim_kb": 114.3}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_mage_tap_512.webp", "anim": "masc_mage_tap_512_anim.webp", "w": 424, "h": 768, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 179.1, "anim_kb": 175.2}}}, "masc_starter": {"crop": {"x": 0.09375, "y": 0.10416666666666667, "w": 0.890625, "h": 0.8854166666666666, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_starter_idle_256.webp", "anim": "masc_starter_idle_256_anim.webp", "w": 228, "h": 340, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 116.8, "anim_kb": 128.4}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_starter_idle_512.webp", "anim": "masc_starter_idle_512_anim.webp", "w": 456, "h": 680, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 190.9, "anim_kb": 199.1}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_starter_tap_256.webp", "anim": "masc_starter_tap_256_anim.webp", "w": 228, "h": 340, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 98.1, "anim_kb": 105.0}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_starter_tap_512.webp", "anim": "masc_starter_tap_512_anim.webp", "w": 456, "h": 680, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 163.6, "anim_kb": 159.0}}}, "masc_warrior": {"crop": {"x": 0.0, "y": 0.0, "w": 0.9375, "h": 1.0, "full_w": 512, "full_h": 768}, "idle": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_warrior_idle_256.webp", "anim": "masc_warrior_idle_256_anim.webp", "w": 240, "h": 384, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 135.0, "anim_kb": 152.4}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_warrior_idle_512.webp", "anim": "masc_warrior_idle_512_anim.webp", "w": 480, "h": 768, "cols": 8, "frames": 24, "fps": 12, "sheet_kb": 235.4, "anim_kb": 252.9}}, "tap": {"256": {"full_w": 256, "full_h": 384, "sheet": "masc_warrior_tap_256.webp", "anim": "masc_warrior_tap_256_anim.webp", "w": 240, "h": 384, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 109.6, "anim_kb": 116.2}, "512": {"full_w": 512, "full_h": 768, "sheet": "masc_warrior_tap_512.webp", "anim": "masc_warrior_tap_512_anim.webp", "w": 480, "h": 768, "cols": 8, "frames": 17, "fps": 20, "sheet_kb": 193.3, "anim_kb": 191.2}}}};
-const NAMES = { starter:'Starter', warrior:'Warrior', mage:'Mage' };
-let RES = 'auto';
-const imgs = {};
-function sheet(ch, anim, w) { const k = ch + anim + w; if (!imgs[k]) { const im = new Image(); im.src = 'anim/' + META[ch][anim][w].sheet; imgs[k] = im; } return imgs[k]; }
-function pickW(cssW) { if (RES !== 'auto') return RES; return cssW * (window.devicePixelRatio || 1) > 300 ? '512' : '256'; }
-class Player {
-  constructor(canvas, ch) { this.c = canvas; this.ctx = canvas.getContext('2d'); this.ch = ch; this.anim = 'idle'; this.t0 = performance.now(); this.fit(); }
-  fit() { const r = this.c.getBoundingClientRect(), d = window.devicePixelRatio || 1; this.c.width = Math.round(r.width * d); this.c.height = Math.round(r.height * d); this.w = pickW(r.width); }
-  tap() { this.anim = 'tap'; this.t0 = performance.now(); const p = document.createElement('span'); p.className = 'pop'; p.textContent = '\u2728'; this.c.parentNode.appendChild(p); setTimeout(() => p.remove(), 1000); }
-  draw(now) {
-    const m = META[this.ch][this.anim][this.w]; let f = Math.floor((now - this.t0) / 1000 * m.fps);
-    if (this.anim === 'tap' && f >= m.frames) { this.anim = 'idle'; this.t0 = now; return this.draw(now); }
-    f = ((f % m.frames) + m.frames) % m.frames;
-    const im = sheet(this.ch, this.anim, this.w); if (!im.complete) return;
-    const sx = (f % m.cols) * m.w, sy = Math.floor(f / m.cols) * m.h, cw = this.c.width, chh = this.c.height;
-    this.ctx.clearRect(0, 0, cw, chh);
-    // sheets hold a tight crop of the full portrait frame; place it back where it sits in the full frame
-    const cr = META[this.ch].crop, s = Math.min(cw / m.full_w, chh / m.full_h), fx = (cw - m.full_w * s) / 2, fy = chh - m.full_h * s;
-    this.ctx.imageSmoothingQuality = 'high';
-    this.ctx.drawImage(im, sx, sy, m.w, m.h, fx + cr.x * m.full_w * s, fy + cr.y * m.full_h * s, m.w * s, m.h * s);
-  }
-}
-const players = []; let bigP = null;
-function setBig(ch) {
-  document.querySelectorAll('.cell').forEach(c => c.classList.toggle('sel', c.dataset.ch === ch));
-  const [sex, set] = ch.split('_'); document.getElementById('bigname').textContent = NAMES[set] + ' (' + sex + ')';
-  const m = META[ch]; document.getElementById('bigmeta').textContent = `idle ${m.idle['256'].frames}f @${m.idle['256'].fps}fps · tap ${m.tap['256'].frames}f @${m.tap['256'].fps}fps`;
-  if (!bigP) { bigP = new Player(document.getElementById('big'), ch); players.push(bigP); } else { bigP.ch = ch; bigP.anim = 'idle'; bigP.t0 = performance.now(); }
-}
-const grid = document.getElementById('grid');
-Object.keys(META).sort((a, b) => (a.split('_')[0] < b.split('_')[0] ? 1 : -1) || 0).forEach(ch => {
-  const cell = document.createElement('div'); cell.className = 'cell'; cell.dataset.ch = ch;
-  const [sex, set] = ch.split('_');
-  cell.innerHTML = `<div class="frame"><canvas></canvas></div><div class="nm">${NAMES[set]} · ${sex}</div>`; grid.appendChild(cell);
-  const p = new Player(cell.querySelector('canvas'), ch); p.t0 -= Math.random() * 2000; players.push(p);
-  cell.querySelector('.frame').addEventListener('click', () => { p.tap(); setBig(ch); bigP.tap(); });
-});
-document.getElementById('bigf').addEventListener('click', () => bigP && bigP.tap());
-setBig(Object.keys(META).find(k => k === 'masc_warrior') || Object.keys(META)[0]);
-['auto', '256', '512'].forEach(r => document.getElementById('b-' + r).addEventListener('click', e => { RES = r; document.querySelectorAll('.row button').forEach(b => b.classList.toggle('on', b === e.target)); players.forEach(p => p.fit()); }));
-window.addEventListener('resize', () => players.forEach(p => p.fit()));
-(function loop(now) { players.forEach(p => p.draw(now)); requestAnimationFrame(loop); })(performance.now());
-</script>
-</body></html>
+const B='../../assets/heroes/v19c/', HC=['#14101c','#2a2140','#3b2a20','#6b3e1f','#8a5a2b','#c8873a','#e8d27a','#b23a3a','#d06a3a','#6a6a72','#9a9aa2','#d8d8dc','#cfd6ff','#4a6ac8'],
+SK=['#fbe3cf','#f6d2b0','#f0c29a','#e6b48a','#d9a066','#c68a55','#b5774a','#a8693d','#8d5532','#76462a','#6e4126','#5a3520','#47291a','#352015'];
+let MF, st={sex:'masc',set:'starter',hair:'textured_crop',hc:'#3b2a20',sk:'#e6b48a'}, tap=0; const IM={}, TI={};
+const load=u=>IM[u]||(IM[u]=Object.assign(new Image(),{src:B+u+'.webp'}));
+const tint=(u,c)=>{const k=u+c; if(TI[k])return TI[k]; const e=load(u); if(!e.complete||!e.naturalWidth)return null; const cv=document.createElement('canvas'); cv.width=e.naturalWidth; cv.height=e.naturalHeight; const x=cv.getContext('2d'); x.drawImage(e,0,0); x.globalCompositeOperation='multiply'; x.fillStyle=c; x.fillRect(0,0,cv.width,cv.height); x.globalCompositeOperation='destination-in'; x.drawImage(e,0,0); return TI[k]=cv;};
+function draw(cv,ch,hair,which,fr){const m=MF.chars[ch]; if(!m)return; if(m.hair.indexOf(hair)<0&&hair!=='bald')hair=m.hair[0]; const p=ch+'/'+which+'_', b=load(p+'base'); if(!b.complete||!b.naturalWidth)return;
+ const L=[b,tint(p+'skin',st.sk)].concat(hair==='bald'?[]:[tint(p+'hair-'+hair,st.hc)]); if(L.some(x=>!x))return; cv.width=m.w; cv.height=m.h; const x=cv.getContext('2d'); L.forEach(i=>x.drawImage(i,fr*m.w,0,m.w,m.h,0,0,m.w,m.h));}
+function sw(id,list,key){const e=document.getElementById(id); e.innerHTML=list.map(c=>`<span class="sw${c===st[key]?' on':''}" style="background:${c}" data-c="${c}"></span>`).join(''); e.onclick=ev=>{if(ev.target.dataset.c){st[key]=ev.target.dataset.c; sw(id,list,key);}};}
+fetch(B+'manifest.json').then(r=>r.json()).then(m=>{MF=m; const hs=['bald'].concat(m.chars.masc_starter.hair); hair.innerHTML=hs.map(h=>`<option ${h===st.hair?'selected':''}>${h}</option>`).join('');
+ sw('hc',HC,'hc'); sw('sk',SK,'sk'); ['sex','set','hair'].forEach(k=>document.getElementById(k).onchange=e=>st[k]=e.target.value); document.getElementById('tap').onclick=()=>tap=performance.now();
+ const g=document.getElementById('grid'); ['starter','warrior','mage','dawn','archive','shadow'].forEach(s=>{const c=document.createElement('canvas'); c.dataset.set=s; g.appendChild(c);});
+ let kb=0; Object.keys(IM).length; setInterval(()=>{const now=performance.now(), F=MF.fps, N=MF.n; let which='idle', fr=Math.floor(now/1000*F.idle)%N.idle;
+  if(now-tap<N.tap/F.tap*1000){which='tap'; fr=Math.min(N.tap-1,Math.floor((now-tap)/1000*F.tap));}
+  const ch=st.sex+'_'+st.set; ['big','mid','sm'].forEach(id=>draw(document.getElementById(id),ch,st.hair,which,fr));
+  g.querySelectorAll('canvas').forEach(c=>draw(c,st.sex+'_'+c.dataset.set,st.hair,'idle',fr));
+  info.textContent=ch+' · hair '+st.hair+(MF.chars[ch]&&MF.chars[ch].hair.length===1?' (tucked under the hood)':'');},1000/12);});
+</script></body></html>
